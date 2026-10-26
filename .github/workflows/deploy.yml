@@ -42,6 +42,9 @@ jobs:
           if [ -d content/Site ]; then
             cp -a content/Site/. content/
             rm -rf content/Site
+            # Syncer writes image embeds with the full folder path (Site/Images/...), so drop
+            # that prefix from links too or the images would not be found.
+            find content -name '*.md' -exec sed -i -e 's#\[\[Site/#[[#g' -e 's#\](Site/#](#g' {} +
           fi
 
       - name: Build site
