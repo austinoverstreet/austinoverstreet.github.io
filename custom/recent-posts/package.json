@@ -1,0 +1,42 @@
+{
+  "name": "@austin/recent-posts",
+  "version": "1.0.0",
+  "description": "Recent posts list for the home page, newest first",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "exports": {
+    ".": { "import": "./dist/index.js" },
+    "./components": { "import": "./dist/components/index.js" },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": { "preact": "^10.0.0" },
+  "quartz": {
+    "name": "recent-posts",
+    "displayName": "Recent Posts",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {
+      "title": "Recent posts",
+      "limit": 5,
+      "folder": "posts"
+    },
+    "components": {
+      "RecentPosts": {
+        "displayName": "Recent Posts",
+        "defaultPosition": "afterBody",
+        "defaultPriority": 50
+      }
+    },
+    "optionSchema": {
+      "title": { "type": "string" },
+      "limit": { "type": "number" },
+      "folder": { "type": "string" }
+    }
+  }
+}

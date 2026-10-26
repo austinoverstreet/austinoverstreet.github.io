@@ -37,6 +37,8 @@
     "quartz": "./quartz/bootstrap-cli.mjs"
   },
   "dependencies": {
+    "@austin/post-signup": "file:custom/post-signup",
+    "@austin/recent-posts": "file:custom/recent-posts",
     "@clack/prompts": "^1.8.0",
     "@floating-ui/dom": "^1.7.4",
     "@myriaddreamin/rehype-typst": "^0.7.0",
@@ -54,7 +56,6 @@
     "@quartz-community/content-meta": "^1.0.0",
     "@quartz-community/content-page": "^1.0.0",
     "@quartz-community/crawl-links": "^1.0.0",
-    "@quartz-themes/core": "^2.0.0",
     "@quartz-community/created-modified-date": "^1.0.0",
     "@quartz-community/darkmode": "^1.0.0",
     "@quartz-community/description": "^1.0.0",
@@ -86,6 +87,7 @@
     "@quartz-community/tag-list": "^1.0.0",
     "@quartz-community/tag-page": "^1.0.0",
     "@quartz-community/unlisted-pages": "^1.0.0",
+    "@quartz-themes/core": "^2.0.0",
     "ansi-truncate": "^1.4.0",
     "async-mutex": "^0.5.0",
     "chokidar": "^5.0.0",

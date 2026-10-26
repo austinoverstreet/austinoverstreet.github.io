@@ -1,0 +1,48 @@
+{
+  "name": "@austin/post-signup",
+  "version": "1.0.0",
+  "description": "Newsletter signup box shown at the bottom of every post",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "exports": {
+    ".": { "import": "./dist/index.js" },
+    "./components": { "import": "./dist/components/index.js" },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": { "preact": "^10.0.0" },
+  "quartz": {
+    "name": "post-signup",
+    "displayName": "Post Signup",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {
+      "formAction": "",
+      "folder": "posts",
+      "heading": "Chaos Theory",
+      "text": "Letters, stories, and updates from behind the curtain, delivered to your inbox.",
+      "placeholder": "Email Address",
+      "button": "Subscribe to Chaos"
+    },
+    "components": {
+      "PostSignup": {
+        "displayName": "Post Signup",
+        "defaultPosition": "afterBody",
+        "defaultPriority": 60
+      }
+    },
+    "optionSchema": {
+      "formAction": { "type": "string" },
+      "folder": { "type": "string" },
+      "heading": { "type": "string" },
+      "text": { "type": "string" },
+      "placeholder": { "type": "string" },
+      "button": { "type": "string" }
+    }
+  }
+}

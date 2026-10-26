@@ -152,7 +152,7 @@ plugins:
       position: left
       priority: 50
   - source: "@quartz-community/graph"
-    enabled: true
+    enabled: false
     layout:
       position: right
       priority: 10
@@ -180,7 +180,7 @@ plugins:
       position: beforeBody
       priority: 20
   - source: "@quartz-community/tag-list"
-    enabled: false
+    enabled: true
     layout:
       position: beforeBody
       priority: 30
@@ -218,14 +218,37 @@ plugins:
   - source: "@quartz-community/footer"
     enabled: true
     options:
-      links:
-        GitHub: https://github.com/jackyzha0/quartz
-        Discord Community: https://discord.gg/cRFFHYye7t
+      links: {}
     layout:
       position: footer
       priority: 50
   - source: "@quartz-community/recent-notes"
     enabled: false
+  # --- Custom components (code lives in ./custom, linked via package.json) ---
+  # Recent posts list: home page only, newest first.
+  - source: "@austin/recent-posts"
+    enabled: true
+    options:
+      title: Recent posts
+      limit: 5
+      folder: posts
+    layout:
+      position: afterBody
+      priority: 50
+  # "Subscribe to Chaos" box at the bottom of every post.
+  # formAction is the public Kit form URL (Kit > form > Embed > HTML).
+  - source: "@austin/post-signup"
+    enabled: true
+    options:
+      formAction: "https://app.kit.com/forms/10096420/subscriptions"
+      folder: posts
+      heading: Chaos Theory
+      text: Letters, stories, and updates from behind the curtain, delivered to your inbox.
+      placeholder: Email Address
+      button: Subscribe to Chaos
+    layout:
+      position: afterBody
+      priority: 60
   - source: "@quartz-community/spacer"
     enabled: true
     options: {}
@@ -247,7 +270,7 @@ plugins:
         - tags
         - aliases
       excludedProperties: []
-      hidePropertiesView: false
+      hidePropertiesView: true
       delimiters: ---
       language: yaml
     order: 5
