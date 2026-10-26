@@ -1,0 +1,43 @@
+{
+  "name": "@austin/site-nav",
+  "version": "1.0.0",
+  "description": "Top navigation links, and dark mode as the default theme for first-time visitors",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "exports": {
+    ".": { "import": "./dist/index.js" },
+    "./components": { "import": "./dist/components/index.js" },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": { "preact": "^10.0.0" },
+  "quartz": {
+    "name": "site-nav",
+    "displayName": "Site Nav",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {
+      "links": [
+        { "label": "home", "href": "" },
+        { "label": "posts", "href": "posts/" }
+      ],
+      "defaultTheme": "dark"
+    },
+    "components": {
+      "SiteNav": {
+        "displayName": "Site Nav",
+        "defaultPosition": "left",
+        "defaultPriority": 15
+      }
+    },
+    "optionSchema": {
+      "links": { "type": "array" },
+      "defaultTheme": { "type": "string" }
+    }
+  }
+}

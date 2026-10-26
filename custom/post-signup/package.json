@@ -23,7 +23,7 @@
     "defaultEnabled": true,
     "defaultOptions": {
       "formAction": "",
-      "folder": "posts",
+      "hideOn": ["index", "subscribed", "confirmed"],
       "heading": "Chaos Theory",
       "text": "Letters, stories, and updates from behind the curtain, delivered to your inbox.",
       "placeholder": "Email Address",
@@ -38,7 +38,7 @@
     },
     "optionSchema": {
       "formAction": { "type": "string" },
-      "folder": { "type": "string" },
+      "hideOn": { "type": "array" },
       "heading": { "type": "string" },
       "text": { "type": "string" },
       "placeholder": { "type": "string" },

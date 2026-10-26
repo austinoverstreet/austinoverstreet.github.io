@@ -39,6 +39,10 @@
   "dependencies": {
     "@austin/post-signup": "file:custom/post-signup",
     "@austin/recent-posts": "file:custom/recent-posts",
+    "@austin/site-footer": "file:custom/site-footer",
+    "@austin/site-forms": "file:custom/site-forms",
+    "@austin/site-nav": "file:custom/site-nav",
+    "@austin/site-wallpaper": "file:custom/site-wallpaper",
     "@clack/prompts": "^1.8.0",
     "@floating-ui/dom": "^1.7.4",
     "@myriaddreamin/rehype-typst": "^0.7.0",

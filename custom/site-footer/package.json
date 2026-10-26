@@ -1,0 +1,38 @@
+{
+  "name": "@austin/site-footer",
+  "version": "1.0.0",
+  "description": "Site footer: social links, copyright, and Privacy and Contact links",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "exports": {
+    ".": { "import": "./dist/index.js" },
+    "./components": { "import": "./dist/components/index.js" },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": { "preact": "^10.0.0" },
+  "quartz": {
+    "name": "site-footer",
+    "displayName": "Site Footer",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": { "owner": "", "social": [], "pages": [] },
+    "components": {
+      "SiteFooter": {
+        "displayName": "Site Footer",
+        "defaultPosition": "footer",
+        "defaultPriority": 50
+      }
+    },
+    "optionSchema": {
+      "owner": { "type": "string" },
+      "social": { "type": "array" },
+      "pages": { "type": "array" }
+    }
+  }
+}

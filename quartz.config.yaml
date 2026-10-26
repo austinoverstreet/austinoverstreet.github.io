@@ -12,33 +12,36 @@ configuration:
     - templates
     - .obsidian
   theme:
-    fontOrigin: googleFonts
-    cdnCaching: true
+    # Fonts are hosted on this site (quartz/static/fonts), not loaded from Google.
+    fontOrigin: local
+    cdnCaching: false
     typography:
-      header: Schibsted Grotesk
-      body: Source Sans Pro
-      code: IBM Plex Mono
+      header: JetBrains Mono
+      body: Inter
+      code: JetBrains Mono
+    # Catppuccin Latte (light) and Mocha (dark) with a sapphire accent (light uses a
+    # slightly deeper sapphire so links stay readable).
     colors:
       lightMode:
-        light: "#faf8f8"
-        lightgray: "#e5e5e5"
-        gray: "#b8b8b8"
-        darkgray: "#4e4e4e"
-        dark: "#2b2b2b"
-        secondary: "#284b63"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#fff23688"
+        light: "#eff1f5"
+        lightgray: "#ccd0da"
+        gray: "#6c6f85"
+        darkgray: "#5c5f77"
+        dark: "#4c4f69"
+        secondary: "#157089"
+        tertiary: "#04a5e5"
+        highlight: rgba(21, 112, 137, 0.12)
+        textHighlight: "#df8e1d55"
       darkMode:
-        light: "#161618"
-        lightgray: "#393639"
-        gray: "#646464"
-        darkgray: "#d4d4d4"
-        dark: "#ebebec"
-        secondary: "#7b97aa"
-        tertiary: "#84a59d"
-        highlight: rgba(143, 159, 169, 0.15)
-        textHighlight: "#b3aa0288"
+        light: "#11111b"
+        lightgray: "#313244"
+        gray: "#9399b2"
+        darkgray: "#bac2de"
+        dark: "#cdd6f4"
+        secondary: "#74c7ec"
+        tertiary: "#89dceb"
+        highlight: rgba(116, 199, 236, 0.14)
+        textHighlight: "#f9e2af55"
 plugins:
   - source: "@quartz-community/created-modified-date"
     enabled: true
@@ -72,6 +75,7 @@ plugins:
     layout:
       position: right
       priority: 30
+      condition: not-index
   - source: "@quartz-community/crawl-links"
     enabled: true
     options:
@@ -81,7 +85,7 @@ plugins:
     enabled: true
     order: 70
   - source: "@quartz-community/latex"
-    enabled: true
+    enabled: false
     options:
       renderEngine: katex
     order: 80
@@ -98,7 +102,7 @@ plugins:
     enabled: false
     order: 92
   - source: "@quartz-community/quartz-fonts"
-    enabled: true
+    enabled: false
   - source: "@quartz-themes/core"
     enabled: false
     options:
@@ -147,7 +151,7 @@ plugins:
   - source: "@quartz-community/tag-page"
     enabled: true
   - source: "@quartz-community/explorer"
-    enabled: true
+    enabled: false
     layout:
       position: left
       priority: 50
@@ -165,7 +169,7 @@ plugins:
       groupOptions:
         grow: true
   - source: "@quartz-community/backlinks"
-    enabled: true
+    enabled: false
     layout:
       position: right
       priority: 50
@@ -179,6 +183,7 @@ plugins:
     layout:
       position: beforeBody
       priority: 20
+      condition: not-index
   - source: "@quartz-community/tag-list"
     enabled: true
     layout:
@@ -196,7 +201,7 @@ plugins:
       priority: 30
       group: toolbar
   - source: "@quartz-community/reader-mode"
-    enabled: true
+    enabled: false
     layout:
       position: left
       priority: 35
@@ -216,7 +221,7 @@ plugins:
       position: afterBody
       priority: 10
   - source: "@quartz-community/footer"
-    enabled: true
+    enabled: false
     options:
       links: {}
     layout:
@@ -225,23 +230,64 @@ plugins:
   - source: "@quartz-community/recent-notes"
     enabled: false
   # --- Custom components (code lives in ./custom, linked via package.json) ---
-  # Recent posts list: home page only, newest first.
+  # Recent letters list: home page only, newest first.
   - source: "@austin/recent-posts"
     enabled: true
     options:
-      title: Recent posts
+      title: Recent letters
       limit: 5
       folder: posts
     layout:
       position: afterBody
       priority: 50
-  # "Subscribe to Chaos" box at the bottom of every post.
-  # formAction is the public Kit form URL (Kit > form > Embed > HTML).
+  # Full-page wallpaper: a still image for everyone, plus a silent looping video
+  # on wide screens (skipped for reduced-motion / data-saver visitors).
+  # Files live in quartz/static/wallpaper.
+  - source: "@austin/site-wallpaper"
+    enabled: true
+    options:
+      # "Waves, sea, ocean" by RostislavUzunov, Pixabay Content License (free use,
+      # no credit required). Re-encoded smaller and silent.
+      poster: /static/wallpaper/waves.jpg
+      video: /static/wallpaper/waves.mp4
+      minWidth: 1000
+    layout:
+      position: footer
+      priority: 10
+  # Top bar links (also sets dark as the default theme for first-time visitors).
+  # href is relative to the site root; "subscribe" is its own page.
+  - source: "@austin/site-nav"
+    enabled: true
+    options:
+      defaultTheme: dark
+      links:
+        - label: home
+          href: ""
+        - label: about
+          href: "about"
+        - label: books
+          href: "books"
+        - label: letters
+          href: "posts/"
+        - label: contact
+          href: "contact"
+        - label: subscribe
+          href: "subscribe"
+          pill: true
+    layout:
+      position: left
+      priority: 15
+  # "Subscribe to Chaos" box at the bottom of every page (not on pages listed in
+  # hideOn). formAction is the public Kit form URL (Kit > form > Embed > HTML).
   - source: "@austin/post-signup"
     enabled: true
     options:
       formAction: "https://app.kit.com/forms/10096420/subscriptions"
-      folder: posts
+      hideOn:
+        - index
+        - subscribed
+        - confirmed
+        - subscribe
       heading: Chaos Theory
       text: Letters, stories, and updates from behind the curtain, delivered to your inbox.
       placeholder: Email Address
@@ -249,6 +295,32 @@ plugins:
     layout:
       position: afterBody
       priority: 60
+  # Sends forms marked data-ajax-form (the contact form) in the background.
+  - source: "@austin/site-forms"
+    enabled: true
+    layout:
+      position: afterBody
+      priority: 90
+  # Footer: social links, copyright, Privacy and Contact.
+  - source: "@austin/site-footer"
+    enabled: true
+    options:
+      owner: Austin Overstreet
+      social:
+        - label: Instagram
+          href: https://www.instagram.com/austinoverstreetofficial
+        - label: TikTok
+          href: https://www.tiktok.com/@thebadnewsbandit
+        - label: Royal Road
+          href: https://www.royalroad.com/profile/771836/fictions
+      pages:
+        - label: Privacy
+          href: privacy
+        - label: Contact
+          href: contact
+    layout:
+      position: footer
+      priority: 50
   - source: "@quartz-community/spacer"
     enabled: true
     options: {}

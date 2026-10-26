@@ -1,0 +1,34 @@
+{
+  "name": "@austin/site-forms",
+  "version": "1.0.0",
+  "description": "Sends forms marked data-ajax-form in the background and shows the result on the page",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "exports": {
+    ".": { "import": "./dist/index.js" },
+    "./components": { "import": "./dist/components/index.js" },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": { "preact": "^10.0.0" },
+  "quartz": {
+    "name": "site-forms",
+    "displayName": "Site Forms",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {},
+    "components": {
+      "SiteForms": {
+        "displayName": "Site Forms",
+        "defaultPosition": "afterBody",
+        "defaultPriority": 90
+      }
+    },
+    "optionSchema": {}
+  }
+}

@@ -1,3 +1,997 @@
 @use "./variables.scss" as *;
 
-// put your custom CSS here!
+// ── Text size ────────────────────────────────────────────────────────────────
+// Everything is sized in rem, so raising the root size enlarges the whole site.
+// It's a percentage (not px), so visitors who set a bigger default in their
+// browser still get theirs scaled up too. The few things that should NOT grow
+// (the large name, the Latin motto, the name in the top bar) are divided by the
+// same factor below so they keep their original size.
+$boost: 1.125; // 16px -> 18px
+html {
+  font-size: $boost * 100%;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Austin Overstreet: site design
+// Minimal dark zen with a Hyprland feel: floating bar, glass tiles, thin accent
+// borders, rounded corners, even gaps. Palette = Catppuccin Mocha / Latte; the
+// single accent color is set in quartz.config.yaml (--secondary) and mirrored
+// here as --accent-rgb. Fonts are self-hosted.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Fonts (files live in quartz/static/fonts; licenses are alongside) ───────
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("/static/fonts/Inter-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 400; font-display: swap; src: url("/static/fonts/Inter-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("/static/fonts/Inter-600.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("/static/fonts/JetBrainsMono-400.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/static/fonts/JetBrainsMono-500.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 700; font-display: swap; src: url("/static/fonts/JetBrainsMono-700.woff2") format("woff2"); }
+
+// ── Design tokens ────────────────────────────────────────────────────────────
+:root {
+  --gap: 16px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --accent-rgb: 116, 199, 236; // keep in step with colors.darkMode.secondary (sapphire)
+  --panel: rgba(30, 30, 46, 0.62); // Mocha "base", translucent
+  --panel-soft: rgba(24, 24, 37, 0.5); // Mocha "mantle"
+  --panel-border: rgba(var(--accent-rgb), 0.26);
+  --panel-shadow: 0 10px 36px rgba(0, 0, 0, 0.32);
+  --blur: blur(14px) saturate(1.25);
+  --glow: 0 0 0 1px rgba(var(--accent-rgb), 0.08), 0 0 28px rgba(var(--accent-rgb), 0.07);
+}
+:root[saved-theme="light"] {
+  --accent-rgb: 21, 112, 137; // keep in step with colors.lightMode.secondary
+  --panel: rgba(239, 241, 245, 0.82); // Latte "base"
+  --panel-soft: rgba(230, 233, 239, 0.7);
+  --panel-border: rgba(var(--accent-rgb), 0.24);
+  --panel-shadow: 0 10px 30px rgba(76, 79, 105, 0.14);
+  --glow: 0 0 0 1px rgba(var(--accent-rgb), 0.06), 0 0 24px rgba(var(--accent-rgb), 0.05);
+}
+
+// ── Page background (the wallpaper layer, when present, sits above this) ─────
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lightgray) transparent;
+}
+body {
+  background:
+    radial-gradient(1100px 700px at 12% -8%, rgba(var(--accent-rgb), 0.13), transparent 60%),
+    radial-gradient(900px 600px at 96% 4%, rgba(137, 180, 250, 0.08), transparent 60%),
+    radial-gradient(900px 700px at 50% 112%, rgba(var(--accent-rgb), 0.06), transparent 60%),
+    var(--light);
+  background-attachment: fixed;
+  font-feature-settings: "calt" 1;
+}
+:root[saved-theme="light"] body {
+  background:
+    radial-gradient(1100px 700px at 12% -8%, rgba(var(--accent-rgb), 0.07), transparent 60%),
+    radial-gradient(900px 600px at 96% 4%, rgba(4, 165, 229, 0.05), transparent 60%),
+    var(--light);
+  background-attachment: fixed;
+}
+::selection {
+  background: var(--secondary);
+  color: var(--light);
+}
+
+// ── Grid: bar on top, one main tile, optional table-of-contents tile ─────────
+.page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--gap) var(--gap) 3rem;
+
+  & > #quartz-body {
+    grid-template-columns: minmax(0, 1fr) 270px;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "grid-sidebar-left grid-sidebar-left"
+      "grid-header grid-sidebar-right"
+      "grid-footer grid-footer";
+    column-gap: var(--gap);
+    row-gap: var(--gap);
+    padding: 0;
+
+    // Pages with no table of contents (home): the main tile takes the full width
+    &:has(.right.sidebar:empty) {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "grid-sidebar-left"
+        "grid-header"
+        "grid-footer";
+    }
+    .right.sidebar:empty {
+      display: none;
+    }
+
+    @media all and ($tablet), all and ($mobile) {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "grid-sidebar-left"
+        "grid-header"
+        "grid-sidebar-right"
+        "grid-footer";
+    }
+  }
+}
+
+// ── The floating top bar (Waybar-style) ──────────────────────────────────────
+.page > #quartz-body > .left.sidebar {
+  grid-area: grid-sidebar-left;
+  position: sticky;
+  top: var(--gap);
+  z-index: 50;
+  height: auto;
+  min-height: 0;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  padding: 0.55rem 0.9rem;
+  background: var(--panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  box-shadow: var(--panel-shadow), var(--glow);
+
+  .page-title {
+    margin: 0 0.25rem 0 0.35rem;
+    font-size: calc(1rem / #{$boost}); // name in the bar: keeps its size
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+
+    a {
+      color: var(--dark);
+      background: transparent;
+      &::before {
+        content: "~/";
+        color: var(--secondary);
+        margin-right: 0.15rem;
+      }
+      &:hover {
+        color: var(--secondary);
+      }
+    }
+  }
+
+  .site-nav {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .mobile-only {
+    display: none;
+  }
+
+  // search box + theme toggle
+  .flex-component {
+    margin: 0 !important;
+    align-items: center;
+  }
+  .search .search-button {
+    background: transparent;
+    border: 1px solid var(--lightgray);
+    border-radius: 999px;
+    height: 2rem;
+    padding: 0 0.85rem;
+    font-family: var(--headerFont);
+    font-size: 0.8rem;
+    transition: border-color 0.2s ease;
+    &:hover {
+      border-color: var(--secondary);
+    }
+    p {
+      color: var(--gray);
+    }
+  }
+  .darkmode {
+    margin: 0 0.15rem;
+  }
+}
+
+// The date / reading-time line only makes sense on letters, not on About, Books, etc.
+body:not([data-slug^="posts/"]) .content-meta,
+body[data-slug="posts/index"] .content-meta {
+  display: none;
+}
+
+// ── The main tile ────────────────────────────────────────────────────────────
+.page > #quartz-body > .center {
+  grid-area: grid-header;
+  margin: 0; // Quartz centers this box with auto margins, which shrinks it on short pages
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  justify-self: stretch;
+  padding: 2rem clamp(1.25rem, 4vw, 3rem) 2.25rem;
+  background: var(--panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--panel-shadow), var(--glow);
+  min-width: 0;
+
+  // the page-header block ships with a big top margin meant for the old layout
+  .page-header {
+    margin: 0;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--lightgray);
+    margin: 2rem 0 1rem;
+    opacity: 0.7;
+  }
+  .page-footer {
+    margin-top: 0;
+  }
+
+  // The home page has its own big welcome, so the plain page title is hidden there
+  &:has(.hero),
+  &:has(.about-head) {
+    .article-title,
+    .content-meta {
+      display: none;
+    }
+  }
+
+  article {
+    h1.article-title,
+    & > h1 {
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.35rem;
+    }
+    h2 {
+      margin-top: 2.4rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--lightgray);
+    }
+    h2,
+    h3,
+    h4 {
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    p,
+    li {
+      line-height: 1.75;
+    }
+    // comfortable reading width for text; cards and boxes can use the full tile
+    & > p,
+    & > ul,
+    & > ol,
+    & > blockquote {
+      max-width: 70ch;
+    }
+    a.internal,
+    a.external {
+      border-radius: 6px;
+    }
+  }
+
+  // breadcrumbs: small, quiet, monospace
+  .breadcrumb-container {
+    margin: 0 0 1.1rem;
+    font-family: var(--headerFont);
+    font-size: 0.78rem;
+    a,
+    .breadcrumb-element p {
+      color: var(--gray);
+      font-weight: 400;
+      background: transparent;
+    }
+    a:hover {
+      color: var(--secondary);
+    }
+    .breadcrumb-element:last-child a {
+      color: var(--darkgray);
+    }
+  }
+
+  // content-meta line (date, reading time) and tags under the title
+  .content-meta {
+    font-family: var(--headerFont);
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin: 0 0 0.75rem;
+  }
+  ul.tags {
+    margin: 0.25rem 0 1.25rem;
+    gap: 0.4rem;
+    a.tag-link {
+      font-family: var(--headerFont);
+      font-size: 0.78rem;
+      background: transparent;
+      border: 1px solid var(--lightgray);
+      border-radius: 999px;
+      padding: 0.15rem 0.7rem;
+      color: var(--darkgray);
+      transition: border-color 0.2s ease, color 0.2s ease;
+      &::before {
+        content: "#";
+        color: var(--secondary);
+        margin-right: 0.1rem;
+      }
+      &:hover {
+        border-color: var(--secondary);
+        color: var(--secondary);
+      }
+    }
+  }
+}
+
+// ── Table of contents tile ───────────────────────────────────────────────────
+.page > #quartz-body > .right.sidebar {
+  grid-area: grid-sidebar-right;
+  position: sticky;
+  top: calc(var(--gap) + 4.4rem);
+  align-self: start;
+  height: auto;
+  max-height: calc(100vh - 7rem);
+  overflow-y: auto;
+  padding: 1rem 1.15rem;
+  background: var(--panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--panel-shadow);
+  font-size: 0.9rem;
+
+  @media all and not ($desktop) {
+    display: none;
+  }
+}
+
+// About and Books don't need a table of contents: hide it and give the page the full width.
+body[data-slug="about"],
+body[data-slug="books"] {
+  #quartz-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "grid-sidebar-left"
+      "grid-header"
+      "grid-footer";
+  }
+  .right.sidebar {
+    display: none;
+  }
+}
+
+// Table of contents: Quartz fades entries you haven't scrolled to down to 35%.
+// Keep them all clearly readable, and just brighten the section you're in.
+.right.sidebar ul.toc-content.overflow > li > a {
+  opacity: 0.85;
+}
+.right.sidebar ul.toc-content.overflow > li > a.in-view {
+  opacity: 1;
+}
+
+// ── Footer ───────────────────────────────────────────────────────────────────
+.page > #quartz-body > footer {
+  grid-area: grid-footer;
+  margin: 0;
+  padding: 0.5rem 0 0;
+  text-align: center;
+  font-family: var(--headerFont);
+  font-size: 0.78rem;
+  p,
+  ul {
+    opacity: 0.88;
+  }
+}
+
+// ── Wallpaper: dimming layer over the picture ────────────────────────────────
+// This is the knob for readability. Raise the alpha numbers to dim more.
+.site-wallpaper .wp-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(17, 17, 27, 0.25) 0%, rgba(17, 17, 27, 0.7) 100%),
+    linear-gradient(to bottom, rgba(17, 17, 27, 0.25), rgba(17, 17, 27, 0.55));
+}
+:root[saved-theme="light"] .site-wallpaper .wp-scrim {
+  background: rgba(239, 241, 245, 0.72);
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+// Use in notes as plain HTML links: <a class="btn primary" href="...">Label</a>
+.btn {
+  display: inline-block;
+  padding: 0.55rem 1.3rem;
+  font-family: var(--headerFont);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  border: 1px solid var(--secondary);
+  border-radius: 999px;
+  background: transparent !important;
+  color: var(--secondary) !important;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  &:hover {
+    background: var(--secondary) !important;
+    color: var(--light) !important;
+    transform: translateY(-1px);
+  }
+  &.primary {
+    background: var(--secondary) !important;
+    color: var(--light) !important;
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+// ── Home page: the welcome (hero) ────────────────────────────────────────────
+.hero,
+.about-head {
+  display: flex;
+  align-items: center;
+  gap: 2rem 2.5rem;
+  padding: 0.5rem 0 1.75rem;
+
+  .hero-avatar {
+    flex: none;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    padding: 4px;
+    background: linear-gradient(140deg, var(--secondary), rgba(var(--accent-rgb), 0.15));
+    box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.28);
+
+    p {
+      margin: 0;
+      height: 100%;
+    }
+    img {
+      display: block;
+      margin: 0; // Quartz gives every image a 1rem top/bottom margin, which pushed the photo out of its ring
+      box-sizing: border-box; // so the border counts inside the circle instead of pushing it out
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid var(--light);
+      background: var(--light); // the code portrait is transparent; give it a dark disc
+    }
+    // stand-in until a photo is added: initials in a circle
+    &.placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: var(--light);
+        color: var(--secondary);
+        font-family: var(--headerFont);
+        font-size: 3rem;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+    }
+  }
+
+  .hero-text {
+    min-width: 0;
+  }
+  .hero-eyebrow {
+    font-family: var(--headerFont);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--secondary);
+    margin-bottom: 0.35rem;
+  }
+  .hero-name {
+    font-family: var(--headerFont);
+    font-size: clamp(calc(2rem / #{$boost}), 5.5vw, calc(3.2rem / #{$boost})); // name: keeps its size
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--dark);
+  }
+  .hero-tagline {
+    margin: 0.6rem 0 1.2rem;
+    max-width: 38ch;
+    font-size: 1.15rem;
+    line-height: 1.55;
+    color: var(--darkgray);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+
+  @media all and ($mobile) {
+    flex-direction: column;
+    text-align: center;
+    .hero-avatar {
+      width: 132px;
+      height: 132px;
+    }
+    .hero-tagline {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-actions {
+      justify-content: center;
+    }
+  }
+}
+
+// ── About page header (portrait + name) ──────────────────────────────────────
+.about-head {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem 2.25rem;
+  margin: 0.25rem 0 1.5rem;
+  .hero-avatar {
+    width: 240px;
+    height: 240px;
+  }
+  @media all and ($mobile) {
+    flex-direction: column;
+    text-align: center;
+    .hero-avatar {
+      width: 190px;
+      height: 190px;
+    }
+  }
+}
+
+// ── Home page: the motto, with a link to the About page ──────────────────────
+.motto {
+  margin: 0.25rem 0 1.5rem;
+  p {
+    margin: 0 0 0.35rem;
+    font-size: clamp(calc(1.25rem / #{$boost}), 2.6vw, calc(1.7rem / #{$boost})); // motto: keeps its size
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--dark);
+    letter-spacing: -0.005em;
+  }
+}
+.more-link {
+  display: inline-block;
+  margin: 0.2rem 0 1rem;
+  font-family: var(--headerFont);
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 400;
+}
+
+// ── "New release" feature card (home page) ───────────────────────────────────
+.feature {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 1.25rem 2rem;
+  align-items: center;
+  margin: 0.5rem 0 1rem;
+  padding: 1.5rem;
+  background: var(--panel-soft);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  box-shadow: var(--glow);
+
+  & > p:first-child {
+    margin: 0;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--lightgray);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  }
+  .feature-body {
+    min-width: 0;
+    h3 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+    p {
+      margin: 0.45rem 0;
+    }
+    blockquote {
+      margin: 0.9rem 0 1.2rem;
+      font-style: italic;
+      color: var(--darkgray);
+    }
+  }
+  @media all and ($mobile) {
+    grid-template-columns: 1fr;
+    & > p:first-child {
+      max-width: 170px;
+    }
+  }
+}
+
+// ── Contact form and link rows ───────────────────────────────────────────────
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 1.4rem 1.5rem 1.5rem;
+  background: var(--panel-soft);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow);
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  label {
+    font-family: var(--headerFont);
+    font-size: 0.8rem;
+    color: var(--darkgray);
+  }
+  input[type="text"],
+  input[type="email"],
+  select,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.9rem;
+    font: inherit;
+    color: var(--dark);
+    background: var(--light);
+    border: 1px solid var(--lightgray);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s ease;
+    &:focus {
+      outline: none;
+      border-color: var(--secondary);
+    }
+  }
+  textarea {
+    resize: vertical;
+    min-height: 8rem;
+  }
+  // hidden spam trap: real people never see or fill it
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  button[type="submit"] {
+    align-self: flex-start;
+    padding: 0.6rem 1.5rem;
+    font-family: var(--headerFont);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--light);
+    background: var(--secondary);
+    border: 1px solid var(--secondary);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    &:hover {
+      opacity: 0.9;
+    }
+    &:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+  }
+  .form-note {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--gray);
+  }
+  .form-status.error {
+    margin: 0;
+    color: #f38ba8;
+  }
+}
+.form-done {
+  max-width: 40rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--panel-soft);
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--dark);
+}
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+// ── Section heading with a link on the right ("Books            all books →") ─
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 2.4rem 0 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--lightgray);
+
+  h2 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .more {
+    font-family: var(--headerFont);
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+}
+
+// ── Home page shelf: "Books" and "Currently Writing" side by side ────────────
+.shelf {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 2.25rem;
+  align-items: start;
+
+  .shelf-col {
+    min-width: 0;
+  }
+  // two cards per shelf, filling the column
+  .book-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media all and ($mobile) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ── Compact book cards (home page): side by side ─────────────────────────────
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin: 0.5rem 0 1rem;
+}
+.book-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  padding: 0.9rem 0.8rem 1rem;
+  background: var(--panel-soft);
+  border: 1px solid var(--lightgray);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+  &:hover {
+    border-color: var(--panel-border);
+    box-shadow: var(--glow);
+    transform: translateY(-2px);
+  }
+  p {
+    margin: 0;
+    line-height: 1.35;
+  }
+  // cover
+  & > p:first-child {
+    width: 100%;
+    max-width: 120px;
+    margin-bottom: 0.45rem;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--lightgray);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  }
+  strong,
+  strong a {
+    font-family: var(--headerFont);
+    font-size: 0.85rem;
+    color: var(--dark);
+    background: transparent;
+  }
+  strong a:hover {
+    color: var(--secondary);
+  }
+  // "Buy on Amazon" button
+  p a:not(.internal) {
+    display: inline-block;
+    margin-top: 0.3rem;
+    padding: 0.22rem 0.85rem;
+    font-family: var(--headerFont);
+    font-size: 0.75rem;
+    border: 1px solid var(--secondary);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--secondary);
+    transition: background 0.2s ease, color 0.2s ease;
+    &:hover {
+      background: var(--secondary);
+      color: var(--light) !important;
+    }
+  }
+  // status label for books in progress, e.g. *Drafting: 85%*
+  em {
+    display: inline-block;
+    margin-top: 0.3rem;
+    padding: 0.18rem 0.75rem;
+    font-family: var(--headerFont);
+    font-size: 0.8rem;
+    font-style: normal;
+    color: var(--darkgray);
+    border: 1px dashed var(--gray);
+    border-radius: 999px;
+  }
+}
+
+// ── Signup box (home page + bottom of every post) ────────────────────────────
+.post-signup {
+  margin: 2rem 0 0.5rem;
+  padding: 1.25rem 1.4rem;
+  background: var(--panel-soft);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--glow);
+  max-width: 44rem;
+
+  h3,
+  .signup-title {
+    font-family: var(--headerFont);
+  }
+  input[type="email"] {
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    border-color: var(--lightgray);
+    transition: border-color 0.2s ease;
+    &:focus {
+      outline: none;
+      border-color: var(--secondary);
+    }
+  }
+  button {
+    border-radius: 999px;
+    padding: 0.55rem 1.2rem;
+    font-family: var(--headerFont);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--light);
+  }
+}
+
+// ── Detailed book entries (Books page) ───────────────────────────────────────
+.book {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  column-gap: 1.75rem;
+  align-items: start;
+  margin: 1.1rem 0;
+  padding: 1.25rem;
+  background: var(--panel-soft);
+  border: 1px solid var(--lightgray);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    border-color: var(--panel-border);
+    box-shadow: var(--glow);
+  }
+
+  // the cover image sits in the first column, spanning every row
+  & > p:first-child {
+    grid-column: 1;
+    grid-row: 1 / span 12;
+    margin: 0;
+  }
+  & > *:not(:first-child) {
+    grid-column: 2;
+    max-width: 62ch;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--lightgray);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  h3 {
+    margin-top: 0;
+    font-size: 1.15rem;
+  }
+  p {
+    margin: 0.4rem 0;
+  }
+  blockquote {
+    margin: 0.8rem 0;
+    font-style: italic;
+    color: var(--darkgray);
+  }
+  em {
+    font-family: var(--headerFont);
+    font-size: 0.9rem;
+    font-style: normal;
+    color: var(--darkgray);
+  }
+  // "Buy on Amazon" link looks like a button
+  & > p:last-child a:not(.internal) {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.3rem 1rem;
+    font-family: var(--headerFont);
+    font-size: 0.82rem;
+    border: 1px solid var(--secondary);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--secondary);
+    transition: background 0.2s ease, color 0.2s ease;
+    &:hover {
+      background: var(--secondary);
+      color: var(--light) !important;
+    }
+  }
+
+  @media all and ($mobile) {
+    grid-template-columns: 1fr;
+    & > p:first-child {
+      grid-row: auto;
+      max-width: 140px;
+      margin-bottom: 1rem;
+    }
+    & > *:not(:first-child) {
+      grid-column: 1;
+    }
+  }
+}
+
+// ── Recent posts list ────────────────────────────────────────────────────────
+.recent-posts {
+  margin-top: 2.5rem;
+  > h2 {
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--lightgray);
+  }
+  .post-title {
+    font-family: var(--headerFont);
+    font-size: 1rem;
+  }
+}
+
+// ── Mobile: the bar becomes a rounded card instead of a pill ─────────────────
+@media all and ($mobile) {
+  .page {
+    padding: 0.6rem 0.6rem 2rem;
+    & > #quartz-body > .left.sidebar {
+      border-radius: var(--radius);
+      justify-content: space-between;
+      .site-nav {
+        order: 3;
+        flex-basis: 100%;
+        justify-content: flex-start;
+      }
+    }
+    & > #quartz-body > .center {
+      padding: 1.4rem 1.1rem 1.6rem;
+    }
+  }
+}

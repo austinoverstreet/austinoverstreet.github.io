@@ -1,0 +1,38 @@
+{
+  "name": "@austin/site-wallpaper",
+  "version": "1.0.0",
+  "description": "Fixed full-page wallpaper: a still image for everyone, plus a looping video on big screens",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "exports": {
+    ".": { "import": "./dist/index.js" },
+    "./components": { "import": "./dist/components/index.js" },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": { "preact": "^10.0.0" },
+  "quartz": {
+    "name": "site-wallpaper",
+    "displayName": "Site Wallpaper",
+    "category": "component",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "dependencies": [],
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": { "poster": "", "video": "", "minWidth": 1000 },
+    "components": {
+      "SiteWallpaper": {
+        "displayName": "Site Wallpaper",
+        "defaultPosition": "footer",
+        "defaultPriority": 10
+      }
+    },
+    "optionSchema": {
+      "poster": { "type": "string" },
+      "video": { "type": "string" },
+      "minWidth": { "type": "number" }
+    }
+  }
+}

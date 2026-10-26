@@ -1,7 +1,6 @@
-// "Subscribe to Chaos" box shown at the bottom of every post: pages under
-// /<folder>/, but not the folder's own listing page. Hand-written ESM (no build
-// step). Text and the Kit form URL are set in quartz.config.yaml under this
-// plugin's `options:`.
+// "Subscribe to Chaos" box shown at the bottom of every page, except the slugs
+// listed in `hideOn`. Hand-written ESM (no build step). Text and the Kit form
+// URL are set in quartz.config.yaml under this plugin's `options:`.
 import { h } from "preact"
 
 const css = `
@@ -52,7 +51,9 @@ const css = `
 
 const defaults = {
   formAction: "",
-  folder: "posts",
+  // Pages (by slug) that must NOT show the box: the home page has its own, and
+  // the thank-you pages come right after signing up.
+  hideOn: ["index", "subscribed", "confirmed"],
   heading: "Chaos Theory",
   text: "Letters, stories, and updates from behind the curtain, delivered to your inbox.",
   placeholder: "Email Address",
@@ -64,9 +65,7 @@ export const PostSignup = (userOpts) => {
 
   const Component = ({ fileData }) => {
     const slug = fileData.slug ?? ""
-    const prefix = `${opts.folder}/`
-    const isPost = slug.startsWith(prefix) && slug !== `${prefix}index`
-    if (!isPost || !opts.formAction) return null
+    if (!opts.formAction || (opts.hideOn || []).includes(slug)) return null
 
     return h(
       "div",
