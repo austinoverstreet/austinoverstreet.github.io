@@ -34,6 +34,16 @@ jobs:
       - name: Install Quartz plugins
         run: npx quartz plugin install
 
+      # The vault keeps site pages in Website/Site and posts in Website/Posts, so Quartz Syncer
+      # publishes them as content/Site/* and content/Posts/*. Lift Site/* up one level here so
+      # the page addresses are /about, /books and so on (not /site/about).
+      - name: Flatten Site folder
+        run: |
+          if [ -d content/Site ]; then
+            cp -a content/Site/. content/
+            rm -rf content/Site
+          fi
+
       - name: Build site
         run: npx quartz build
 
