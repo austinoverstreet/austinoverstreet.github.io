@@ -1,8 +1,8 @@
 ---
 publish: true
-title: Untitled
+title: That's Life
 created: 2026-10-27
-modified: 2026-10-28T02:32:41.225Z
+modified: 2026-10-29T21:37:06.344Z
 tags:
   - letter
 ---
